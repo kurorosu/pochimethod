@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 from .logging import ILoggerFactory, LoggerFactory
+from .timer import ITimerFactory, TimerContext, TimerFactory
 from .workspace import IWorkspaceCreator, Workspace, WorkspaceCreator
 
 
@@ -18,16 +19,19 @@ class Pochi:
     Args:
         workspace_creator: ワークスペース作成の実装.
         logger_factory: ロガー生成の実装.
+        timer_factory: タイマー生成の実装.
     """
 
     def __init__(
         self,
         workspace_creator: IWorkspaceCreator | None = None,
         logger_factory: ILoggerFactory | None = None,
+        timer_factory: ITimerFactory | None = None,
     ) -> None:
         """Pochiを初期化."""
         self._workspace_creator = workspace_creator or WorkspaceCreator()
         self._logger_factory = logger_factory or LoggerFactory()
+        self._timer_factory = timer_factory or TimerFactory()
 
     def create_workspace(
         self,
@@ -91,3 +95,32 @@ class Pochi:
             >>> logger.info("コンソール + ファイル出力")
         """
         return self._logger_factory.create(name, log_dir=log_dir, level=level)
+
+    def timer(
+        self,
+        name: str,
+        logger: logging.Logger | None = None,
+    ) -> TimerContext:
+        """タイマーコンテキストマネージャーを取得.
+
+        処理時間を計測し、終了時にログ出力.
+
+        Args:
+            name: タイマー名（ログ出力時に使用）.
+            logger: ログ出力先. Noneの場合はprint出力.
+
+        Returns:
+            コンテキストマネージャーとして使用可能なタイマー.
+
+        Examples:
+            >>> pochi = Pochi()
+            >>> with pochi.timer("処理A"):
+            ...     do_something()
+            処理A: 1.234s
+
+            >>> logger = pochi.get_logger(__name__)
+            >>> with pochi.timer("処理B", logger):
+            ...     do_something()
+            # ロガー経由で出力
+        """
+        return self._timer_factory.create(name, logger=logger)
