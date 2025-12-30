@@ -5,7 +5,11 @@ Pythonのための便利メソッド集 — ポチのお気に入りの骨、全
 ## インストール
 
 ```bash
-pip install pochimethod
+# pip
+pip install git+https://github.com/torikatsu923/pochimethod.git
+
+# uv
+uv add git+https://github.com/torikatsu923/pochimethod.git
 ```
 
 ## 使い方
