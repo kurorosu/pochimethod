@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from .directory import DirectoryCreator, IDirectoryCreator
+from .workspace import IWorkspaceCreator, Workspace, WorkspaceCreator
 
 
 class Pochi:
@@ -14,30 +14,46 @@ class Pochi:
     依存性注入により、テスト時にモックを差し込むことが可能.
 
     Args:
-        directory_creator: ディレクトリ作成の実装.
+        workspace_creator: ワークスペース作成の実装.
     """
 
     def __init__(
         self,
-        directory_creator: IDirectoryCreator | None = None,
+        workspace_creator: IWorkspaceCreator | None = None,
     ) -> None:
         """Pochiを初期化."""
-        self._directory_creator = directory_creator or DirectoryCreator()
+        self._workspace_creator = workspace_creator or WorkspaceCreator()
 
-    def mkdir(self, path: str | Path, parents: bool = True) -> Path:
-        """ディレクトリを作成し、作成したパスを返す.
+    def create_workspace(
+        self,
+        base_dir: str | Path | None = None,
+        subdirs: list[str] | None = None,
+    ) -> Workspace:
+        """ワークスペースを作成.
+
+        引数なし: outputs/ のみ作成
+        base_dirあり: base_dir/yyyymmdd_xxx/ を作成
+        subdirsあり: サブディレクトリも作成
 
         Args:
-            path: 作成するディレクトリのパス.
-            parents: 親ディレクトリも作成するかどうか.
+            base_dir: ベースディレクトリ. Noneの場合はoutputsのみ作成.
+            subdirs: 作成するサブディレクトリ名のリスト.
 
         Returns:
-            作成されたディレクトリのPath.
+            作成されたワークスペース情報.
 
         Examples:
             >>> pochi = Pochi()
-            >>> created_path = pochi.mkdir("output/data")
-            >>> print(created_path)
-            output/data
+            >>> ws = pochi.create_workspace()
+            >>> print(ws.root)
+            outputs
+
+            >>> ws = pochi.create_workspace("outputs")
+            >>> print(ws.root)
+            outputs/20241230_001
+
+            >>> ws = pochi.create_workspace("outputs", ["models", "images"])
+            >>> print(ws.models)
+            outputs/20241230_001/models
         """
-        return self._directory_creator.create(path, parents=parents)
+        return self._workspace_creator.create(base_dir, subdirs=subdirs)
