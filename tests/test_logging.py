@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pochi import ILoggerFactory, Pochi
-from pochi.logging import LoggerFactory
+from pochi import Pochi
+from pochi.logging import ILoggerFactory, LoggerFactory
 from pochi.logging.formatters import ColoredFormatter, PlainFormatter
 from pochi.logging.handlers import create_console_handler, create_file_handler
 

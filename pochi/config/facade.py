@@ -28,7 +28,7 @@ class ConfigLoaderFacade:
     """
 
     def __init__(self, loaders: list[IConfigLoader] | None = None) -> None:
-        """ConfigLoaderFacade を初期化する.
+        """初期化する.
 
         Args:
             loaders: 使用するローダーのリスト. None の場合はデフォルトのローダーを使用.
@@ -54,7 +54,8 @@ class ConfigLoaderFacade:
         for loader in self._loaders:
             if loader.supports(path):
                 data = loader.load(path)
-                return schema(**data)
+                result: T = schema(**data)
+                return result
 
         supported = [type(loader).__name__ for loader in self._loaders]
         raise ValueError(
