@@ -53,6 +53,13 @@ class Workspace:
             f"Available: {list(self._subdirs.keys())}"
         )
 
+    def __dir__(self) -> list[str]:
+        """利用可能な属性のリストを返す.
+
+        IDE 補完でサブディレクトリ名が表示されるようにする.
+        """
+        return list(super().__dir__()) + list(self._subdirs.keys())
+
     def __repr__(self) -> str:
         """文字列表現を返す."""
         return f"Workspace(root={self._root}, subdirs={list(self._subdirs.keys())})"
