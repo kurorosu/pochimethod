@@ -38,6 +38,9 @@ def create_file_handler(
     Returns:
         設定済みのFileHandler.
     """
+    # 親ディレクトリが存在しない場合は作成
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
     handler = logging.FileHandler(log_path, encoding="utf-8")
     handler.setLevel(level)
     handler.setFormatter(PlainFormatter())
