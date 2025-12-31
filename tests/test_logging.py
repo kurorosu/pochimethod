@@ -119,6 +119,16 @@ class TestLoggerFactory:
 
         assert logger1 is logger2
 
+    def test_prefix_not_duplicated(self) -> None:
+        """pochi. プレフィックスが二重付与されないことを確認."""
+        factory = LoggerFactory()
+
+        # pochi. で始まる名前を渡す
+        logger = factory.create("pochi.mymodule")
+
+        # pochi.pochi.mymodule ではなく pochi.mymodule になる
+        assert logger.name == "pochi.mymodule"
+
 
 class TestPochiGetLogger:
     """Pochi.get_loggerメソッドのテスト."""

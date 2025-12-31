@@ -40,8 +40,11 @@ class LoggerFactory(ILoggerFactory):
         Returns:
             設定済みのロガー.
         """
-        # プレフィックス付きのロガー名を生成
-        logger_name = f"{self._PREFIX}{name}"
+        # プレフィックス付きのロガー名を生成（二重付与を防止）
+        if name.startswith(self._PREFIX):
+            logger_name = name
+        else:
+            logger_name = f"{self._PREFIX}{name}"
 
         # キャッシュキーを生成
         cache_key = f"{logger_name}:{log_dir}"
