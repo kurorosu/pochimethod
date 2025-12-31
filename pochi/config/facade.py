@@ -5,7 +5,9 @@ from typing import Any, TypeVar
 from pydantic import BaseModel
 
 from pochi.config.interfaces import IConfigLoader
+from pochi.config.json_loader import JsonConfigLoader
 from pochi.config.python_loader import PythonConfigLoader
+from pochi.config.yaml_loader import YamlConfigLoader
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -36,6 +38,8 @@ class ConfigLoaderFacade:
         """
         self._loaders = loaders or [
             PythonConfigLoader(),
+            JsonConfigLoader(),
+            YamlConfigLoader(),
         ]
 
     def load(self, path: str, schema: type[T]) -> T:

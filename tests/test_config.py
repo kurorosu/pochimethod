@@ -4,7 +4,13 @@ import pytest
 from pydantic import BaseModel, ValidationError
 
 from pochi import Pochi
-from pochi.config import ConfigLoaderFacade, IConfigLoader, PythonConfigLoader
+from pochi.config import (
+    ConfigLoaderFacade,
+    IConfigLoader,
+    JsonConfigLoader,
+    PythonConfigLoader,
+    YamlConfigLoader,
+)
 
 
 class SampleConfig(BaseModel):
@@ -74,6 +80,127 @@ class TestPythonConfigLoader:
             loader.load(str(config_file))
 
 
+class TestJsonConfigLoader:
+    """JsonConfigLoader のテスト."""
+
+    def test_supports_json_file(self) -> None:
+        """拡張子 .json をサポートする."""
+        loader = JsonConfigLoader()
+        assert loader.supports("config.json") is True
+        assert loader.supports("path/to/config.json") is True
+
+    def test_not_supports_other_extensions(self) -> None:
+        """他の拡張子はサポートしない."""
+        loader = JsonConfigLoader()
+        assert loader.supports("config.py") is False
+        assert loader.supports("config.yaml") is False
+        assert loader.supports("config.toml") is False
+
+    def test_load_json_config(self, tmp_path: pytest.TempPathFactory) -> None:
+        """JSON 設定ファイルを読み込める."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text(
+            '{"model_name": "resnet18", "epochs": 100, "learning_rate": 0.001}'
+        )
+
+        loader = JsonConfigLoader()
+        config = loader.load(str(config_file))
+
+        assert config["model_name"] == "resnet18"
+        assert config["epochs"] == 100
+        assert config["learning_rate"] == 0.001
+
+    def test_load_file_not_found(self) -> None:
+        """存在しないファイルで FileNotFoundError."""
+        loader = JsonConfigLoader()
+        with pytest.raises(FileNotFoundError):
+            loader.load("nonexistent.json")
+
+    def test_load_syntax_error(self, tmp_path: pytest.TempPathFactory) -> None:
+        """構文エラーのファイルで ValueError."""
+        config_file = tmp_path / "bad_config.json"
+        config_file.write_text("{invalid json}")
+
+        loader = JsonConfigLoader()
+        with pytest.raises(ValueError, match="JSON"):
+            loader.load(str(config_file))
+
+    def test_load_non_object_root(self, tmp_path: pytest.TempPathFactory) -> None:
+        """ルートがオブジェクトでない場合に ValueError."""
+        config_file = tmp_path / "array_config.json"
+        config_file.write_text("[1, 2, 3]")
+
+        loader = JsonConfigLoader()
+        with pytest.raises(ValueError, match="オブジェクト"):
+            loader.load(str(config_file))
+
+
+class TestYamlConfigLoader:
+    """YamlConfigLoader のテスト."""
+
+    def test_supports_yaml_file(self) -> None:
+        """拡張子 .yaml と .yml をサポートする."""
+        loader = YamlConfigLoader()
+        assert loader.supports("config.yaml") is True
+        assert loader.supports("config.yml") is True
+        assert loader.supports("path/to/config.yaml") is True
+
+    def test_not_supports_other_extensions(self) -> None:
+        """他の拡張子はサポートしない."""
+        loader = YamlConfigLoader()
+        assert loader.supports("config.py") is False
+        assert loader.supports("config.json") is False
+        assert loader.supports("config.toml") is False
+
+    def test_load_yaml_config(self, tmp_path: pytest.TempPathFactory) -> None:
+        """YAML 設定ファイルを読み込める."""
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(
+            "model_name: resnet18\nepochs: 100\nlearning_rate: 0.001\n"
+        )
+
+        loader = YamlConfigLoader()
+        config = loader.load(str(config_file))
+
+        assert config["model_name"] == "resnet18"
+        assert config["epochs"] == 100
+        assert config["learning_rate"] == 0.001
+
+    def test_load_empty_file(self, tmp_path: pytest.TempPathFactory) -> None:
+        """空ファイルは空の dict を返す."""
+        config_file = tmp_path / "empty.yaml"
+        config_file.write_text("")
+
+        loader = YamlConfigLoader()
+        config = loader.load(str(config_file))
+
+        assert config == {}
+
+    def test_load_file_not_found(self) -> None:
+        """存在しないファイルで FileNotFoundError."""
+        loader = YamlConfigLoader()
+        with pytest.raises(FileNotFoundError):
+            loader.load("nonexistent.yaml")
+
+    def test_load_syntax_error(self, tmp_path: pytest.TempPathFactory) -> None:
+        """構文エラーのファイルで ValueError."""
+        config_file = tmp_path / "bad_config.yaml"
+        config_file.write_text("key: [unclosed bracket")
+
+        loader = YamlConfigLoader()
+        with pytest.raises(ValueError, match="YAML"):
+            loader.load(str(config_file))
+
+    def test_load_non_object_root(self, tmp_path: pytest.TempPathFactory) -> None:
+        """ルートがオブジェクトでない場合に ValueError."""
+        config_file = tmp_path / "array_config.yaml"
+        config_file.write_text("- item1\n- item2\n")
+
+        loader = YamlConfigLoader()
+        with pytest.raises(ValueError, match="オブジェクト"):
+            loader.load(str(config_file))
+
+
 class TestConfigLoaderFacade:
     """ConfigLoaderFacade のテスト."""
 
@@ -127,7 +254,7 @@ class TestConfigLoaderFacade:
         """サポートされていない形式で ValueError."""
         facade = ConfigLoaderFacade()
         with pytest.raises(ValueError, match="サポートされていない"):
-            facade.load("config.json", SampleConfig)
+            facade.load("config.toml", SampleConfig)
 
     def test_load_dict(self, tmp_path: pytest.TempPathFactory) -> None:
         """dict として読み込める."""
