@@ -127,7 +127,7 @@ class TestConfigLoaderFacade:
         """サポートされていない形式で ValueError."""
         facade = ConfigLoaderFacade()
         with pytest.raises(ValueError, match="サポートされていない"):
-            facade.load("config.json", SampleConfig)
+            facade.load("config.toml", SampleConfig)
 
     def test_load_dict(self, tmp_path: pytest.TempPathFactory) -> None:
         """dict として読み込める."""
