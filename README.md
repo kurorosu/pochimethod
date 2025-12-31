@@ -53,6 +53,24 @@ logger.warning("学習率が低すぎる可能性があります")
 logger.error("学習に失敗しました")
 ```
 
+### Config
+
+Python 設定ファイル (.py) を読み込み、Pydantic モデルでバリデーションします。
+
+```python
+from pydantic import BaseModel
+
+class TrainConfig(BaseModel):
+    model_name: str
+    epochs: int
+    learning_rate: float = 0.001
+
+config = pochi.load_config("config.py", TrainConfig)
+print(config.epochs)  # 100
+```
+
+> **⚠️ セキュリティ警告**: `load_config` は Python ファイルを実行するため、信頼できないソースからの設定ファイルを読み込むと任意コード実行のリスクがあります。自分で作成した設定ファイル、またはコードレビュー済みのファイルのみを使用してください。
+
 ### Timer
 
 コンテキストマネージャーで処理時間を計測します。
