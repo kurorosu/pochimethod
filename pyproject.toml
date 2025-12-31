@@ -1,6 +1,6 @@
 [project]
 name = "pochimethod"
-version = "0.0.1"
+version = "0.0.2"
 description = "A versatile method collection for Python — Pochi's favorite bones, all in one place!"
 readme = "README.md"
 requires-python = ">=3.13"

@@ -71,6 +71,22 @@ print(config.epochs)  # 100
 
 > **⚠️ セキュリティ警告**: `load_config` は Python ファイルを実行するため、信頼できないソースからの設定ファイルを読み込むと任意コード実行のリスクがあります。自分で作成した設定ファイル、またはコードレビュー済みのファイルのみを使用してください。
 
+### FileOps
+
+ファイルの検索・コピー・移動を行います。階層構造を保持したコピーも可能です。
+
+```python
+# ファイル検索
+files = pochi.find_files("data/", pattern="**/*.jpg")
+
+# 階層構造を保持してコピー
+result = pochi.copy_files("data/", "backup/", pattern="**/*.jpg")
+# data/train/cat/001.jpg → backup/train/cat/001.jpg
+
+# 移動も同様
+result = pochi.move_files("temp/", "archive/", pattern="**/*.log")
+```
+
 ### Timer
 
 コンテキストマネージャーで処理時間を計測します。
