@@ -67,3 +67,25 @@ class IFileCopier(ABC):
             移動先のファイルパスリスト.
         """
         pass
+
+    @abstractmethod
+    def mirror_structure(
+        self,
+        files: list[Path],
+        dest: str | Path,
+        base_dir: str | Path | None = None,
+    ) -> tuple[list[Path], list[Path]]:
+        """フォルダ構造のみ作成し, 対応するパスを返す.
+
+        ファイルの中身はコピーせず, 出力先のフォルダ構造だけを作成する.
+        処理後のファイルを元と同じ構造で保存したい場合に便利.
+
+        Args:
+            files: 対象のファイルリスト.
+            dest: 出力先ディレクトリ.
+            base_dir: 階層構造の基準ディレクトリ.
+
+        Returns:
+            (元ファイルパスリスト, 出力先ファイルパスリスト) のタプル.
+        """
+        pass

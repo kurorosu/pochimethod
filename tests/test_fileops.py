@@ -228,3 +228,68 @@ class TestPochiFileOps:
 
         assert result == [Path("/dest/file.txt")]
         mock_copier.copy.assert_called_once()
+
+
+class TestMirrorStructure:
+    """mirror_structure のテスト."""
+
+    def test_creates_directory_structure(self, tmp_path: Path) -> None:
+        """フォルダ構造が作成される."""
+        src_dir = tmp_path / "src"
+        dest_dir = tmp_path / "dest"
+        (src_dir / "subdir1").mkdir(parents=True)
+        (src_dir / "subdir2").mkdir(parents=True)
+        (src_dir / "subdir1" / "file1.txt").write_text("content1")
+        (src_dir / "subdir2" / "file2.txt").write_text("content2")
+
+        copier = StructurePreservingCopier()
+        files = [
+            src_dir / "subdir1" / "file1.txt",
+            src_dir / "subdir2" / "file2.txt",
+        ]
+        src_files, dest_files = copier.mirror_structure(
+            files, dest_dir, base_dir=src_dir
+        )
+
+        # フォルダ構造が作成されている
+        assert (dest_dir / "subdir1").is_dir()
+        assert (dest_dir / "subdir2").is_dir()
+        # ファイルはコピーされていない
+        assert not (dest_dir / "subdir1" / "file1.txt").exists()
+        assert not (dest_dir / "subdir2" / "file2.txt").exists()
+
+    def test_returns_corresponding_paths(self, tmp_path: Path) -> None:
+        """対応するパスが返される."""
+        src_dir = tmp_path / "src"
+        dest_dir = tmp_path / "dest"
+        (src_dir / "subdir").mkdir(parents=True)
+        src_file = src_dir / "subdir" / "file.txt"
+        src_file.write_text("content")
+
+        copier = StructurePreservingCopier()
+        src_files, dest_files = copier.mirror_structure(
+            [src_file], dest_dir, base_dir=src_dir
+        )
+
+        assert len(src_files) == 1
+        assert len(dest_files) == 1
+        assert src_files[0] == src_file.resolve()
+        assert dest_files[0] == dest_dir / "subdir" / "file.txt"
+
+    def test_pochi_mirror_structure(self, tmp_path: Path) -> None:
+        """Pochi.mirror_structure が動作する."""
+        src_dir = tmp_path / "src"
+        dest_dir = tmp_path / "dest"
+        (src_dir / "subdir").mkdir(parents=True)
+        src_file = src_dir / "subdir" / "file.txt"
+        src_file.write_text("content")
+
+        pochi = Pochi()
+        files = pochi.find_files(src_dir, pattern="**/*.txt")
+        src_files, dest_files = pochi.mirror_structure(
+            files, dest_dir, base_dir=src_dir
+        )
+
+        assert len(dest_files) == 1
+        assert (dest_dir / "subdir").is_dir()
+        assert not (dest_dir / "subdir" / "file.txt").exists()
