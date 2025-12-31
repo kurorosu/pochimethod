@@ -44,7 +44,9 @@ class PythonConfigLoader(IConfigLoader):
             raise FileNotFoundError(f"設定ファイルが見つかりません: {path}")
 
         try:
-            spec = importlib.util.spec_from_file_location("config", file_path)
+            # ファイル名からユニークなモジュール名を生成
+            module_name = f"pochi_config_{file_path.stem}"
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
             if spec is None or spec.loader is None:
                 raise ValueError(f"設定ファイルを読み込めません: {path}")
 
