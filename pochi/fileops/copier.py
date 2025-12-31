@@ -143,3 +143,46 @@ class StructurePreservingCopier(IFileCopier):
 """
 
         metadata_path.write_text(content, encoding="utf-8")
+
+    def mirror_structure(
+        self,
+        files: list[Path],
+        dest: str | Path,
+        base_dir: str | Path | None = None,
+    ) -> tuple[list[Path], list[Path]]:
+        """フォルダ構造のみ作成し, 対応するパスを返す.
+
+        ファイルの中身はコピーせず, 出力先のフォルダ構造だけを作成する.
+
+        Args:
+            files: 対象のファイルリスト.
+            dest: 出力先ディレクトリ.
+            base_dir: 階層構造の基準ディレクトリ.
+
+        Returns:
+            (元ファイルパスリスト, 出力先ファイルパスリスト) のタプル.
+        """
+        dest_path = Path(dest)
+        base_path = Path(base_dir).resolve() if base_dir else None
+
+        src_files: list[Path] = []
+        dest_files: list[Path] = []
+
+        for src_file in files:
+            src_file = src_file.resolve()
+
+            if base_path:
+                try:
+                    rel_path = src_file.relative_to(base_path)
+                except ValueError:
+                    rel_path = Path(src_file.name)
+            else:
+                rel_path = Path(src_file.name)
+
+            dest_file = dest_path / rel_path
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+
+            src_files.append(src_file)
+            dest_files.append(dest_file)
+
+        return src_files, dest_files

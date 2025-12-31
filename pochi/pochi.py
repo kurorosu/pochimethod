@@ -246,3 +246,34 @@ class Pochi:
             >>> pochi.move_files(files, dest="processed/", base_dir="data/")
         """
         return self._file_copier.move(files, dest, base_dir=base_dir)
+
+    def mirror_structure(
+        self,
+        files: list[Path],
+        dest: str | Path,
+        base_dir: str | Path | None = None,
+    ) -> tuple[list[Path], list[Path]]:
+        """フォルダ構造のみ作成し, 対応するパスを返す.
+
+        ファイルの中身はコピーせず, 出力先のフォルダ構造だけを作成する.
+        処理後のファイルを元と同じ構造で保存したい場合に便利.
+
+        Args:
+            files: 対象のファイルリスト.
+            dest: 出力先ディレクトリ.
+            base_dir: 階層構造の基準ディレクトリ.
+
+        Returns:
+            (元ファイルパスリスト, 出力先ファイルパスリスト) のタプル.
+
+        Examples:
+            >>> pochi = Pochi()
+            >>> files = pochi.find_files("data/", pattern="**/*.jpg")
+            >>> src_files, dest_files = pochi.mirror_structure(
+            ...     files, dest="processed/", base_dir="data/"
+            ... )
+            >>> for src, dst in zip(src_files, dest_files):
+            ...     result = process(src)
+            ...     result.save(dst)
+        """
+        return self._file_copier.mirror_structure(files, dest, base_dir=base_dir)
