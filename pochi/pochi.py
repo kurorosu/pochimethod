@@ -5,21 +5,28 @@
 
 import logging
 from pathlib import Path
+from typing import TypeVar
 
+from pydantic import BaseModel
+
+from .config import ConfigLoaderFacade
 from .logging import ILoggerFactory, LoggerFactory
 from .timer import ITimerFactory, TimerContext, TimerFactory
 from .workspace import IWorkspaceCreator, Workspace, WorkspaceCreator
+
+T = TypeVar("T", bound=BaseModel)
 
 
 class Pochi:
     """便利メソッドを集約したファサードクラス.
 
-    依存性注入により、テスト時にモックを差し込むことが可能.
+    依存性注入により, テスト時にモックを差し込むことが可能.
 
     Args:
         workspace_creator: ワークスペース作成の実装.
         logger_factory: ロガー生成の実装.
         timer_factory: タイマー生成の実装.
+        config_loader: 設定ローダーの実装.
     """
 
     def __init__(
@@ -27,11 +34,13 @@ class Pochi:
         workspace_creator: IWorkspaceCreator | None = None,
         logger_factory: ILoggerFactory | None = None,
         timer_factory: ITimerFactory | None = None,
+        config_loader: ConfigLoaderFacade | None = None,
     ) -> None:
         """Pochiを初期化."""
         self._workspace_creator = workspace_creator or WorkspaceCreator()
         self._logger_factory = logger_factory or LoggerFactory()
         self._timer_factory = timer_factory or TimerFactory()
+        self._config_loader = config_loader or ConfigLoaderFacade()
 
     def create_workspace(
         self,
@@ -124,3 +133,31 @@ class Pochi:
             # ロガー経由で出力
         """
         return self._timer_factory.create(name, logger=logger)
+
+    def load_config(self, path: str | Path, schema: type[T]) -> T:
+        """設定ファイルを読み込み, バリデーションする.
+
+        .py ファイルを読み込み, Pydantic モデルでバリデーションを行う.
+
+        Args:
+            path: 設定ファイルのパス.
+            schema: バリデーションに使用する Pydantic モデルクラス.
+
+        Returns:
+            バリデーション済みの設定オブジェクト.
+
+        Raises:
+            FileNotFoundError: ファイルが存在しない場合.
+            ValueError: サポートされていない形式, またはバリデーションエラー.
+
+        Examples:
+            >>> from pydantic import BaseModel
+            >>> class MyConfig(BaseModel):
+            ...     epochs: int
+            ...     learning_rate: float = 0.001
+            >>> pochi = Pochi()
+            >>> config = pochi.load_config("config.py", MyConfig)
+            >>> print(config.epochs)
+            100
+        """
+        return self._config_loader.load(str(path), schema)

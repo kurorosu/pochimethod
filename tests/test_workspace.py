@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pochi import Pochi, Workspace
-from pochi.workspace import IWorkspaceCreator, WorkspaceCreator
+from pochi import Pochi
+from pochi.workspace import IWorkspaceCreator, Workspace, WorkspaceCreator
 from pochi.workspace.timestamp import (
     find_next_index,
     format_workspace_name,
