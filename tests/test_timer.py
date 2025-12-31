@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pochi import ITimerFactory, Pochi
-from pochi.timer import TimerContext, TimerFactory
+from pochi import Pochi
+from pochi.timer import ITimerFactory, TimerContext, TimerFactory
 
 
 class TestTimerContext:

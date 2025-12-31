@@ -1,9 +1,6 @@
-"""Pochi - A versatile method collection for Python."""
+"""Pochi - 軽量で学習コストが低い Python ユーティリティライブラリ."""
 
-from .logging import ILoggerFactory
 from .pochi import Pochi
-from .timer import ITimerFactory
-from .workspace import IWorkspaceCreator, Workspace
 
 __version__ = "0.0.1"
-__all__ = ["ILoggerFactory", "ITimerFactory", "IWorkspaceCreator", "Pochi", "Workspace"]
+__all__ = ["Pochi"]
