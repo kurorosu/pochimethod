@@ -16,7 +16,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+    "pydantic>=2.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/torikatsu923/pochimethod"
