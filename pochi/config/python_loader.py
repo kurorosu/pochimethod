@@ -12,6 +12,12 @@ class PythonConfigLoader(IConfigLoader):
 
     .py ファイル内のモジュールレベル変数を dict として取得する.
 
+    Warning:
+        このローダーは Python ファイルを実行するため, 信頼できないソースからの
+        設定ファイルを読み込むと任意コード実行のリスクがあります.
+        自分で作成した設定ファイル, またはコードレビュー済みのファイルのみを
+        使用してください.
+
     Example:
         >>> loader = PythonConfigLoader()
         >>> config = loader.load("config.py")
