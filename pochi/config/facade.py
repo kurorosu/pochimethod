@@ -14,7 +14,8 @@ class ConfigLoaderFacade:
     """設定ファイルローダーのファサード.
 
     複数の形式のローダーを管理し, 適切なローダーを選択して読み込む.
-    Pydantic モデルによるバリデーションも行う.
+    Pydantic モデルによる厳格なバリデーション (strict=True) を行う.
+    型の自動変換は行わず, 型が一致しない場合はエラーになる.
 
     Example:
         >>> from pydantic import BaseModel
@@ -54,7 +55,8 @@ class ConfigLoaderFacade:
         for loader in self._loaders:
             if loader.supports(path):
                 data = loader.load(path)
-                result: T = schema(**data)
+                # strict=True で型の自動変換を無効化
+                result: T = schema.model_validate(data, strict=True)
                 return result
 
         supported = [type(loader).__name__ for loader in self._loaders]

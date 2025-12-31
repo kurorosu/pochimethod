@@ -111,6 +111,18 @@ class TestConfigLoaderFacade:
         with pytest.raises(ValidationError):
             facade.load(str(config_file), SampleConfig)
 
+    def test_load_strict_mode_rejects_type_coercion(
+        self, tmp_path: pytest.TempPathFactory
+    ) -> None:
+        """strict モードで型の自動変換を拒否する."""
+        config_file = tmp_path / "config.py"
+        # epochs が文字列 "100" (int に変換可能だが strict では拒否)
+        config_file.write_text('model_name = "resnet18"\nepochs = "100"\n')
+
+        facade = ConfigLoaderFacade()
+        with pytest.raises(ValidationError):
+            facade.load(str(config_file), SampleConfig)
+
     def test_load_unsupported_format(self) -> None:
         """サポートされていない形式で ValueError."""
         facade = ConfigLoaderFacade()
