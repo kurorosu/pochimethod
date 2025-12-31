@@ -14,10 +14,15 @@ class LoggerFactory(ILoggerFactory):
     """ロガー生成の実装クラス.
 
     コンソール出力（色付き）とファイル出力（プレーン）を提供.
+    ロガー名には自動的に 'pochi.' プレフィックスが付与され,
+    他のライブラリとの名前衝突を防ぐ.
     """
 
     # 生成済みロガーのキャッシュ
     _loggers: dict[str, logging.Logger] = {}
+
+    # ロガー名のプレフィックス
+    _PREFIX = "pochi."
 
     def create(
         self,
@@ -35,18 +40,22 @@ class LoggerFactory(ILoggerFactory):
         Returns:
             設定済みのロガー.
         """
+        # プレフィックス付きのロガー名を生成
+        logger_name = f"{self._PREFIX}{name}"
+
         # キャッシュキーを生成
-        cache_key = f"{name}:{log_dir}"
+        cache_key = f"{logger_name}:{log_dir}"
 
         # 既に生成済みなら返す
         if cache_key in self._loggers:
             return self._loggers[cache_key]
 
-        # ロガーを生成
-        logger = logging.getLogger(name)
+        # ロガーを生成 (pochi. プレフィックス付き)
+        logger = logging.getLogger(logger_name)
         logger.setLevel(level)
 
         # 既存のハンドラーをクリア（重複防止）
+        # pochi. プレフィックス付きなので他ライブラリと衝突しない
         logger.handlers.clear()
 
         # コンソールハンドラーを追加
