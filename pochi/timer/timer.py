@@ -40,12 +40,21 @@ class TimerContext:
     ) -> None:
         """コンテキスト終了時に呼ばれる."""
         self._elapsed = time.perf_counter() - self._start_time
-        message = f"{self._name}: {self._elapsed:.3f}s"
 
-        if self._logger is not None:
-            self._logger.info(message)
+        if exc_type is not None:
+            # 例外発生時
+            message = f"{self._name} (failed): {self._elapsed:.3f}s"
+            if self._logger is not None:
+                self._logger.warning(message)
+            else:
+                print(message)
         else:
-            print(message)
+            # 正常終了時
+            message = f"{self._name}: {self._elapsed:.3f}s"
+            if self._logger is not None:
+                self._logger.info(message)
+            else:
+                print(message)
 
     @property
     def elapsed(self) -> float:

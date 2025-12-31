@@ -43,6 +43,31 @@ class TestTimerContext:
         call_args = mock_logger.info.call_args[0][0]
         assert "処理B:" in call_args
 
+    def test_logs_warning_on_exception(self) -> None:
+        """例外発生時にwarningでログ出力されることを確認."""
+        mock_logger = MagicMock(spec=logging.Logger)
+
+        with pytest.raises(ValueError):
+            with TimerContext("処理C", logger=mock_logger):
+                raise ValueError("テストエラー")
+
+        mock_logger.warning.assert_called_once()
+        call_args = mock_logger.warning.call_args[0][0]
+        assert "処理C" in call_args
+        assert "failed" in call_args
+
+    def test_prints_failed_on_exception(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """例外発生時にfailedがprint出力されることを確認."""
+        with pytest.raises(ValueError):
+            with TimerContext("処理D"):
+                raise ValueError("テストエラー")
+
+        captured = capsys.readouterr()
+        assert "処理D" in captured.out
+        assert "failed" in captured.out
+
 
 class TestTimerFactory:
     """TimerFactoryクラスのテスト."""
