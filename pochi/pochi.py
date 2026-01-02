@@ -54,16 +54,19 @@ class Pochi:
         self,
         base_dir: str | Path | None = None,
         subdirs: list[str] | None = None,
+        prefix: str | None = None,
     ) -> Workspace:
         """ワークスペースを作成.
 
         引数なし: outputs/ のみ作成
         base_dirあり: base_dir/yyyymmdd_xxx/ を作成
+        prefixあり: base_dir/prefix1, prefix2, ... を作成
         subdirsあり: サブディレクトリも作成
 
         Args:
             base_dir: ベースディレクトリ. Noneの場合はoutputsのみ作成.
             subdirs: 作成するサブディレクトリ名のリスト.
+            prefix: ディレクトリ名のプレフィックス. 指定時は連番形式 (prefix1, prefix2, ...).
 
         Returns:
             作成されたワークスペース情報.
@@ -81,8 +84,12 @@ class Pochi:
             >>> ws = pochi.create_workspace("outputs", ["models", "images"])
             >>> print(ws.models)
             outputs/20241230_001/models
+
+            >>> ws = pochi.create_workspace("outputs", prefix="models")
+            >>> print(ws.root)
+            outputs/models1
         """
-        return self._workspace_creator.create(base_dir, subdirs=subdirs)
+        return self._workspace_creator.create(base_dir, subdirs=subdirs, prefix=prefix)
 
     def get_logger(
         self,
