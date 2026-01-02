@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from .config import ConfigLoaderFacade
 from .fileops import GlobFileFinder, IFileCopier, IFileFinder, StructurePreservingCopier
 from .logging import ILoggerFactory, LoggerFactory
+from .registry import IRegistry, Registry
 from .timer import ITimerFactory, TimerContext, TimerFactory
 from .workspace import IWorkspaceCreator, Workspace, WorkspaceCreator
 
@@ -277,3 +278,34 @@ class Pochi:
             ...     result.save(dst)
         """
         return self._file_copier.mirror_structure(files, dest, base_dir=base_dir)
+
+    def create_registry(self, name: str) -> IRegistry:
+        """クラスレジストリを作成する.
+
+        デコレータベースでクラスを登録し, 設定ファイルから動的にインスタンス生成できる.
+
+        Args:
+            name: レジストリ名（識別用）.
+
+        Returns:
+            レジストリインスタンス.
+
+        Examples:
+            >>> pochi = Pochi()
+            >>> processors = pochi.create_registry("processors")
+            >>> @processors.register("blur")
+            ... class BlurProcessor:
+            ...     def __init__(self, kernel_size: int = 5):
+            ...         self.kernel_size = kernel_size
+            >>> blur = processors.create("blur", kernel_size=7)
+            >>> blur.kernel_size
+            7
+
+            >>> # 設定ファイルから一括生成
+            >>> config = [
+            ...     {"name": "blur", "kernel_size": 7},
+            ...     {"name": "edge", "threshold": 50},
+            ... ]
+            >>> pipeline = processors.create_from_config(config)
+        """
+        return Registry(name)
