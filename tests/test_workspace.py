@@ -182,4 +182,91 @@ class TestPochiCreateWorkspace:
         result = pochi.create_workspace("outputs", subdirs=["test"])
 
         assert result == expected_ws
-        mock_creator.create.assert_called_once_with("outputs", subdirs=["test"])
+        mock_creator.create.assert_called_once_with(
+            "outputs", subdirs=["test"], prefix=None
+        )
+
+
+class TestWorkspaceCreatorNumbered:
+    """WorkspaceCreator の連番ディレクトリ作成テスト."""
+
+    def test_create_with_prefix(self, tmp_path: Path) -> None:
+        """prefix 指定で連番ディレクトリが作成されることを確認."""
+        creator = WorkspaceCreator()
+
+        ws = creator.create(tmp_path, prefix="models")
+
+        assert ws.root == tmp_path / "models1"
+        assert ws.root.exists()
+
+    def test_create_with_prefix_increments(self, tmp_path: Path) -> None:
+        """既存ディレクトリがある場合に連番がインクリメントされることを確認."""
+        creator = WorkspaceCreator()
+
+        ws1 = creator.create(tmp_path, prefix="models")
+        ws2 = creator.create(tmp_path, prefix="models")
+        ws3 = creator.create(tmp_path, prefix="models")
+
+        assert ws1.root.name == "models1"
+        assert ws2.root.name == "models2"
+        assert ws3.root.name == "models3"
+
+    def test_create_with_prefix_and_subdirs(self, tmp_path: Path) -> None:
+        """prefix とサブディレクトリを同時に指定できることを確認."""
+        creator = WorkspaceCreator()
+
+        ws = creator.create(tmp_path, prefix="models", subdirs=["logs", "checkpoints"])
+
+        assert ws.root == tmp_path / "models1"
+        assert (ws.root / "logs").exists()
+        assert (ws.root / "checkpoints").exists()
+        assert ws.logs == tmp_path / "models1" / "logs"
+        assert ws.checkpoints == tmp_path / "models1" / "checkpoints"
+
+    def test_create_with_prefix_skips_existing(self, tmp_path: Path) -> None:
+        """既存ディレクトリをスキップして次の番号を使用することを確認."""
+        # models1, models2 を事前作成
+        (tmp_path / "models1").mkdir()
+        (tmp_path / "models2").mkdir()
+
+        creator = WorkspaceCreator()
+        ws = creator.create(tmp_path, prefix="models")
+
+        assert ws.root == tmp_path / "models3"
+
+    def test_create_with_different_prefixes(self, tmp_path: Path) -> None:
+        """異なるプレフィックスで独立した連番を管理できることを確認."""
+        creator = WorkspaceCreator()
+
+        ws_models = creator.create(tmp_path, prefix="models")
+        ws_results = creator.create(tmp_path, prefix="results")
+        ws_models2 = creator.create(tmp_path, prefix="models")
+
+        assert ws_models.root.name == "models1"
+        assert ws_results.root.name == "results1"
+        assert ws_models2.root.name == "models2"
+
+
+class TestPochiCreateWorkspaceNumbered:
+    """Pochi.create_workspace の連番ディレクトリ作成テスト."""
+
+    def test_create_workspace_with_prefix(self, tmp_path: Path) -> None:
+        """Pochi から prefix 指定でワークスペースを作成できることを確認."""
+        pochi = Pochi()
+
+        ws = pochi.create_workspace(tmp_path, prefix="models")
+
+        assert ws.root == tmp_path / "models1"
+        assert ws.root.exists()
+
+    def test_create_workspace_with_prefix_and_subdirs(self, tmp_path: Path) -> None:
+        """Pochi から prefix とサブディレクトリを同時に指定できることを確認."""
+        pochi = Pochi()
+
+        ws = pochi.create_workspace(
+            tmp_path, prefix="models", subdirs=["logs", "checkpoints"]
+        )
+
+        assert ws.root == tmp_path / "models1"
+        assert ws.logs == tmp_path / "models1" / "logs"
+        assert ws.checkpoints == tmp_path / "models1" / "checkpoints"
