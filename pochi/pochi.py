@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from .config import ConfigLoaderFacade
 from .fileops import GlobFileFinder, IFileCopier, IFileFinder, StructurePreservingCopier
+from .image import resize_with_padding
 from .logging import ILoggerFactory, LoggerFactory
 from .registry import IRegistry, Registry
 from .timer import ITimerFactory, TimerContext, TimerFactory
@@ -316,3 +317,44 @@ class Pochi:
             >>> pipeline = processors.create_from_config(config)
         """
         return Registry(name)
+
+    def resize_image(
+        self,
+        src: str | Path,
+        dst: str | Path,
+        size: int | tuple[int, int],
+        mode: str = "long",
+        padding_color: tuple[int, int, int] = (0, 0, 0),
+    ) -> Path:
+        """アスペクト比を保持して画像をリサイズする.
+
+        長辺を指定サイズに合わせ, 足りない部分をパディングで埋める.
+        CNNなどの学習用データセット前処理に便利.
+
+        Args:
+            src: 入力画像パス.
+            dst: 出力画像パス.
+            size: 出力サイズ. int なら正方形, tuple なら (width, height).
+            mode: リサイズ基準.
+                - "long": 長辺を size に合わせる（画像全体が収まる）.
+                - "short": 短辺を size に合わせる（はみ出し部分はクロップ）.
+            padding_color: パディング色 (R, G, B). デフォルトは黒.
+
+        Returns:
+            出力画像パス.
+
+        Examples:
+            >>> pochi = Pochi()
+            >>> # 画像を検索
+            >>> files = pochi.find_files("data/train", extensions=[".jpg", ".png"])
+            >>> # フォルダ構造をミラーリング
+            >>> src_files, dst_files = pochi.mirror_structure(
+            ...     files, dest="data_resized/train", base_dir="data/train"
+            ... )
+            >>> # アスペクト比を保持してリサイズ
+            >>> for src, dst in zip(src_files, dst_files):
+            ...     pochi.resize_image(src, dst, size=224)
+        """
+        return resize_with_padding(
+            src, dst, size, mode=mode, padding_color=padding_color
+        )
