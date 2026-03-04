@@ -75,8 +75,12 @@ def resize_with_padding(
         # 短辺を基準: 短辺を合わせる（はみ出しはクロップ）
         ratio = max(target_w / orig_w, target_h / orig_h)
 
-    new_w = int(orig_w * ratio)
-    new_h = int(orig_h * ratio)
+    if mode == "long":
+        new_w = min(round(orig_w * ratio), target_w)
+        new_h = min(round(orig_h * ratio), target_h)
+    else:
+        new_w = max(round(orig_w * ratio), target_w)
+        new_h = max(round(orig_h * ratio), target_h)
     img_resized = img.resize((new_w, new_h), Image.LANCZOS)
 
     # 結果画像を作成
