@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - `create_workspace` に `prefix` 引数を追加して連番ディレクトリ生成に対応 ([#31](https://github.com/kurorosu/pochimethod/pull/31))
 - アスペクト比保持リサイズ機能を追加 ([#35](https://github.com/kurorosu/pochimethod/pull/35))
 - GitHub Issue/PR テンプレートを追加 ([#37](https://github.com/kurorosu/pochimethod/pull/37))
+- Image リサイズのサンプルコード `examples/image/resize_with_padding.py` を追加
 
 ### Changed
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - ロガー名プレフィックスの二重付与を防止 ([#27](https://github.com/kurorosu/pochimethod/pull/27))
+- リサイズ時の 1px ズレを `round()` + クランプで修正
 
 ## [0.0.2] - 2025-12-31
 
